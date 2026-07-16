@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mapa Animado - Villa Carlos Paz</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --comic-border: 4px solid #1a1a1a; --comic-shadow: 6px 6px 0px rgba(26, 26, 26, 1); }
+        body { font-family: 'Balsamiq Sans', cursive; margin: 0; padding: 0; overflow: hidden; background-color: #87CEEB; }
+        #map { height: 100vh; width: 100%; z-index: 10; filter: saturate(1.8) contrast(1.1) brightness(1.05) hue-rotate(5deg); background: #aad3df; }
+        .comic-panel { border: var(--comic-border); box-shadow: var(--comic-shadow); border-radius: 1rem; }
+        .comic-button { border: 3px solid #1a1a1a; box-shadow: 4px 4px 0px rgba(26, 26, 26, 1); transition: all 0.1s ease; }
+        .comic-button:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px rgba(26, 26, 26, 1); }
+        @keyframes bounce-marker { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        .animate-bounce-custom { animation: bounce-marker 1.5s infinite ease-in-out; }
+        @keyframes float-cloud { from { transform: translateX(-150px); } to { transform: translateX(110vw); } }
+        .cloud { position: absolute; z-index: 20; pointer-events: none; opacity: 0.8; filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.1)); }
+        .leaflet-popup-content-wrapper { background: #fff; border: var(--comic-border); box-shadow: var(--comic-shadow); border-radius: 1.5rem; padding: 0; overflow: hidden; }
+        .leaflet-popup-tip-container { display: none; }
+        .leaflet-popup-content { margin: 0 !important; width: 320px !important; font-family: 'Balsamiq Sans', cursive; }
+    </style>
+</head>
+<body class="relative h-screen w-screen">
+
+    <svg class="cloud" style="top: 10%; animation: float-cloud 40s linear infinite;" width="120" height="80" viewBox="0 0 24 24" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+    <svg class="cloud" style="top: 30%; animation: float-cloud 55s linear infinite 10s;" width="180" height="100" viewBox="0 0 24 24" fill="#ffffff" stroke="#1a1a1a" stroke-width="1"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+
+    <div class="absolute top-4 left-4 z-[1000] w-[180px] md:w-[220px]">
+        <div class="bg-[#ffde59] comic-panel p-2 flex flex-col items-center gap-2 relative">
+            <div class="bg-white p-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] w-full flex items-center justify-center overflow-hidden">
+                <img src="IMG_2024.png" alt="Logo" class="w-full h-auto object-contain">
+            </div>
+            <p class="text-[10px] md:text-xs text-gray-800 font-bold bg-white inline-block px-2 py-1 rounded border-2 border-black shadow-[2px_2px_0px_#000] text-center w-full uppercase">¡Toca los destinos!</p>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <script>
+        const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-31.4050, -64.4984], 13);
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+
+        const URL_GOOGLE_SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQjYdNPEP6L2-IdI1bMWUNZj2o2NEMfS_-AreqhOa9rp8BczLTJCRdLzwjeZ-QM7YrAEkRtOXUZjbr/pub?output=csv";
+
+        function renderizar(datos) {
+            const markers = [];
+            datos.forEach((prop) => {
+                const lat = parseFloat(String(prop.latitud || '').replace(',', '.'));
+                const lng = parseFloat(String(prop.longitud || '').replace(',', '.'));
+                if (isNaN(lat) || isNaN(lng)) return;
+
+                const marker = L.marker([lat, lng], { 
+                    icon: L.divIcon({ className: 'custom-comic-marker', html: `<div class="relative animate-bounce-custom"><div class="${prop.color || 'bg-yellow-400'} text-3xl w-14 h-14 rounded-full flex items-center justify-center border-[3px] border-black shadow-[4px_4px_0px_rgba(0,0,0,1)]">${prop.emoji || '🏠'}</div></div>`, iconSize: [56, 56], iconAnchor: [28, 56] }) 
+                }).addTo(map);
+
+                marker.bindPopup(`<div class="bg-white rounded-[1.5rem] overflow-hidden"><div class="h-44 border-b-4 border-black"><img src="${prop.imagen}" class="w-full h-full object-cover"></div><div class="p-6 bg-[#fffdf0]"><h2 class="text-2xl font-bold uppercase mb-2">${prop.nombre}</h2><p class="text-gray-800 mb-4">${prop.descripcion}</p><a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" class="comic-button block w-full text-center bg-green-400 py-3 rounded-xl font-bold uppercase">¡Llevame Ahí! 🚀</a></div></div>`, { maxWidth: 320 });
+                markers.push(marker);
+            });
+            if (markers.length > 0) map.fitBounds(L.featureGroup(markers).getBounds(), { padding: [50, 50] });
+        }
+
+        Papa.parse(URL_GOOGLE_SHEET_CSV, { download: true, header: true, complete: (res) => renderizar(res.data) });
+    </script>
+</body>
+</html>
