@@ -1,0 +1,18 @@
+{
+  "name": "Guía Turística Villa Carlos Paz",
+  "short_name": "Carlos Paz",
+  "description": "Descubrí lugares, gastronomía, naturaleza y paseos de Villa Carlos Paz.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#dff4ff",
+  "theme_color": "#ffde59",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

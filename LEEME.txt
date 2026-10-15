@@ -1,0 +1,29 @@
+# Guía Turística Villa Carlos Paz
+
+## Archivos
+- `index.html`: aplicación web completa.
+- `manifest.webmanifest`: metadatos para instalación como PWA.
+- `sw.js`: caché básica para la carcasa de la aplicación.
+- `icon.svg`: icono de la guía.
+
+## Publicación
+Para que funcionen el mapa, la carga de Google Sheets y la PWA, publicá los cuatro archivos juntos en un hosting HTTPS (por ejemplo GitHub Pages, Netlify o tu hosting). Abrir `index.html` directamente desde el disco no permite instalar la PWA.
+
+## Google Sheets
+La aplicación conserva la URL CSV que estaba en el HTML original. La hoja debe estar publicada para acceso de lectura y tener columnas de latitud y longitud. Se reconocen `nombre`, `descripcion`, `imagen`, `latitud`, `longitud`, `emoji`, `color`, y opcionalmente `categoria`, `direccion`, `horarios`, `telefono` y `web`. Los encabezados se leen sin distinguir mayúsculas/minúsculas; si tus nombres de columnas difieren, adaptá las listas de alias en `normalizeRow()`.
+
+## Funcionalidades
+- Búsqueda por nombre, descripción y dirección.
+- Filtros por categoría (la categoría puede inferirse del rubro/nombre/descripción).
+- Fichas de destino y enlaces a Google Maps.
+- Rutas sugeridas orientativas según coincidencias de texto y categorías.
+- Compartir enlace, copiar enlace y generar/descargar QR.
+- Ubicación del usuario si autoriza al navegador.
+- Base para instalación PWA y caché de archivos propios.
+
+## Notas
+- Las rutas unen destinos seleccionados en el orden que aparecen en la planilla; son guías visuales, no navegación vial giro a giro.
+- La ubicación requiere permiso y HTTPS.
+- Las librerías de Leaflet, PapaParse, QRCode y los mapas se cargan desde servicios externos y requieren conexión.
+- El modo sin conexión es parcial: los mosaicos del mapa y la planilla externa pueden no estar disponibles offline.
+- Para instalar la PWA, acceder desde un dominio HTTPS y un navegador compatible.

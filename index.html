@@ -1,73 +1,227 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mapa Animado - Villa Carlos Paz</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    
-    <style>
-        :root { --comic-border: 4px solid #1a1a1a; --comic-shadow: 6px 6px 0px rgba(26, 26, 26, 1); }
-        body { font-family: 'Balsamiq Sans', cursive; margin: 0; padding: 0; overflow: hidden; background-color: #87CEEB; }
-        #map { height: 100vh; width: 100%; z-index: 10; filter: saturate(1.8) contrast(1.1) brightness(1.05) hue-rotate(5deg); background: #aad3df; }
-        .comic-panel { border: var(--comic-border); box-shadow: var(--comic-shadow); border-radius: 1rem; }
-        .comic-button { border: 3px solid #1a1a1a; box-shadow: 4px 4px 0px rgba(26, 26, 26, 1); transition: all 0.1s ease; }
-        .comic-button:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px rgba(26, 26, 26, 1); }
-        @keyframes bounce-marker { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        .animate-bounce-custom { animation: bounce-marker 1.5s infinite ease-in-out; }
-        @keyframes float-cloud { from { transform: translateX(-150px); } to { transform: translateX(110vw); } }
-        .cloud { position: absolute; z-index: 20; pointer-events: none; opacity: 0.8; filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.1)); }
-        .leaflet-popup-content-wrapper { background: #fff; border: var(--comic-border); box-shadow: var(--comic-shadow); border-radius: 1.5rem; padding: 0; overflow: hidden; }
-        .leaflet-popup-tip-container { display: none; }
-        .leaflet-popup-content { margin: 0 !important; width: 320px !important; font-family: 'Balsamiq Sans', cursive; }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffde59">
+<meta name="description" content="Descubrí Villa Carlos Paz: lugares, gastronomía, naturaleza, paseos y rutas turísticas.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>¡Descubrí Villa Carlos Paz!</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#171717;--yellow:#ffde59;--blue:#168bff;--green:#20bf65;--paper:#fffdf3;--line:3px solid var(--ink);--shadow:5px 5px 0 var(--ink)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;font-family:"Baloo 2",system-ui,sans-serif;color:var(--ink)}body{background:#dff4ff;overflow:hidden}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #168bff;outline-offset:2px}
+#map{position:absolute;inset:0;z-index:1;background:#b8e7f5}.leaflet-tile{filter:saturate(1.15) contrast(1.03)}.leaflet-control-attribution{font-size:10px!important}
+.topbar{position:absolute;z-index:500;left:14px;top:14px;max-width:min(470px,calc(100vw - 28px));display:flex;align-items:center;gap:10px;background:var(--yellow);border:var(--line);border-radius:18px;padding:9px 14px;box-shadow:var(--shadow)}.brand-mark{display:grid;place-items:center;width:46px;height:46px;background:white;border:2px solid var(--ink);border-radius:13px;font-size:28px;flex-shrink:0}.brand-title{font-weight:800;font-size:clamp(17px,2.5vw,25px);line-height:1}.brand-sub{font-size:12px;font-weight:700;margin-top:3px}
+.panel{position:absolute;z-index:450;left:14px;top:91px;bottom:14px;width:360px;max-width:calc(100vw - 28px);background:rgba(255,253,243,.97);border:var(--line);border-radius:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}.panel-head{padding:14px 14px 9px;border-bottom:2px dashed #b5b5b5}.searchbox{display:flex;gap:8px;align-items:center;background:white;border:2px solid var(--ink);border-radius:14px;padding:8px 10px}.searchbox input{border:0;outline:none;min-width:0;width:100%;background:transparent}.searchbox button{border:0;background:#eee;border-radius:50%;width:28px;height:28px;font-weight:800}
+.filters{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}.chip{border:2px solid var(--ink);border-radius:999px;background:white;padding:5px 10px;font-size:13px;font-weight:800;box-shadow:2px 2px 0 var(--ink)}.chip.active{background:var(--yellow);transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}.panel-scroll{overflow:auto;padding:12px;overscroll-behavior:contain}.section-title{font-size:17px;font-weight:800;margin:0 0 8px;display:flex;justify-content:space-between;align-items:center}.small-btn{border:2px solid var(--ink);border-radius:10px;padding:4px 8px;background:#fff;font-weight:800;font-size:12px}
+.route-list{display:grid;gap:8px}.route-btn{display:flex;align-items:center;gap:10px;text-align:left;width:100%;background:white;border:2px solid var(--ink);border-radius:14px;padding:9px;box-shadow:3px 3px 0 var(--ink)}.route-emoji{width:42px;height:42px;display:grid;place-items:center;background:#ffde59;border:2px solid var(--ink);border-radius:12px;font-size:24px;flex-shrink:0}.route-btn strong{display:block;line-height:1.1}.route-btn small{color:#555}.dest-list{display:grid;gap:8px;margin-top:14px}.dest-row{display:flex;gap:10px;align-items:center;border:2px solid #ddd;background:white;border-radius:14px;padding:8px;text-align:left;width:100%}.dest-row img{width:64px;height:58px;object-fit:cover;border-radius:10px;border:2px solid var(--ink);background:#eee}.dest-row strong{display:block;line-height:1.15}.dest-row small{color:#555;display:block}.empty{padding:18px;text-align:center;background:white;border:2px dashed #aaa;border-radius:14px}
+.sharebox{margin-top:15px;padding:11px;background:#fff0a8;border:2px solid var(--ink);border-radius:15px}.share-actions{display:flex;gap:7px;margin-top:8px}.action{border:2px solid var(--ink);border-radius:12px;padding:8px 10px;font-weight:800;box-shadow:3px 3px 0 var(--ink);background:white}.action.primary{background:var(--green);color:#071b0e}.action.blue{background:var(--blue);color:white}.action:active,.route-btn:active,.chip:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.map-controls{position:absolute;right:15px;top:100px;z-index:400;display:grid;gap:8px}.map-control{width:45px;height:45px;background:white;border:var(--line);border-radius:13px;box-shadow:3px 3px 0 var(--ink);font-size:22px;font-weight:800}.map-control.loc{font-size:19px}
+.mobile-toggle{display:none;position:absolute;z-index:600;bottom:15px;left:50%;transform:translateX(-50%);border:var(--line);border-radius:999px;background:var(--yellow);padding:9px 20px;font-weight:800;box-shadow:var(--shadow)}
+.marker-wrap{background:transparent;border:0}.marker-bubble{width:43px;height:43px;border:3px solid var(--ink);border-radius:50% 50% 50% 8px;transform:rotate(-45deg);display:grid;place-items:center;box-shadow:3px 3px 0 #0005}.marker-bubble span{transform:rotate(45deg);font-size:22px}.leaflet-popup-content-wrapper{border:3px solid var(--ink);border-radius:17px;box-shadow:5px 5px 0 #000;overflow:hidden;padding:0}.leaflet-popup-tip{background:white;border:2px solid var(--ink)}.leaflet-popup-content{margin:0!important;width:min(290px,72vw)!important;font-family:"Baloo 2",sans-serif}.popup-img{width:100%;height:145px;object-fit:cover;display:block;background:#eee}.popup-body{padding:13px;background:var(--paper)}.popup-body h3{font-size:21px;line-height:1.05;margin:0 0 5px}.popup-body p{margin:5px 0 12px;line-height:1.25}.popup-category{display:inline-block;background:#dff2ff;border:1px solid var(--ink);border-radius:99px;padding:2px 8px;font-size:12px;font-weight:800;margin-bottom:6px}.popup-actions{display:flex;gap:8px}.popup-actions a,.popup-actions button{flex:1;text-align:center;border:2px solid var(--ink);border-radius:10px;padding:7px 5px;background:var(--green);font-weight:800;text-decoration:none;color:#111}.popup-actions button{background:white}
+.modal-backdrop{position:fixed;z-index:1000;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:18px}.modal-backdrop.open{display:flex}.modal{background:var(--paper);border:var(--line);border-radius:20px;box-shadow:var(--shadow);width:min(430px,100%);max-height:90vh;overflow:auto;padding:18px;text-align:center}.modal h2{margin:0 0 6px}.modal-close{float:right;border:2px solid var(--ink);border-radius:9px;background:white;font-weight:800;padding:2px 9px}.qr-holder{background:white;border:2px solid var(--ink);border-radius:14px;padding:12px;margin:14px auto;width:max-content;max-width:100%;min-height:210px;display:grid;place-items:center}.qr-holder img,.qr-holder canvas{max-width:100%;height:auto}.toast{position:absolute;z-index:1200;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:white;padding:9px 15px;border-radius:99px;display:none;max-width:90vw;text-align:center}.toast.show{display:block}.loading{padding:14px;text-align:center;font-weight:700}.error{color:#9b1c1c}
+@media(max-width:760px){.topbar{top:9px;left:9px;padding:7px 10px;max-width:calc(100vw - 18px);box-shadow:3px 3px 0 var(--ink)}.brand-mark{width:39px;height:39px;font-size:23px}.brand-title{font-size:18px}.brand-sub{font-size:10px}.panel{left:9px;top:auto;bottom:9px;width:calc(100vw - 18px);max-width:none;height:min(57vh,490px);transition:height .22s ease;box-shadow:4px 4px 0 var(--ink)}.panel.collapsed{height:61px}.panel.collapsed .panel-head,.panel.collapsed .panel-scroll{display:none}.panel.collapsed .panel-grab{display:block}.panel-grab{display:none;text-align:center;padding:7px;font-weight:800;background:var(--yellow);border-bottom:2px solid var(--ink)}.mobile-toggle{display:block;bottom:calc(min(57vh,490px) + 18px);left:auto;right:12px;transform:none;padding:7px 12px}.panel.collapsed~.mobile-toggle{bottom:80px}.map-controls{top:74px;right:10px;gap:7px}.map-control{width:40px;height:40px}.leaflet-bottom.leaflet-right{bottom:66px}.sharebox{margin-top:12px}.dest-list{grid-template-columns:1fr 1fr}.dest-row{align-items:flex-start;flex-direction:column}.dest-row img{width:100%;height:78px}.dest-row span{font-size:13px}.panel-scroll{padding:10px}.panel-head{padding:10px}.filters{gap:6px}.chip{font-size:12px;padding:4px 8px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
-<body class="relative h-screen w-screen">
-
-    <svg class="cloud" style="top: 10%; animation: float-cloud 40s linear infinite;" width="120" height="80" viewBox="0 0 24 24" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
-    <svg class="cloud" style="top: 30%; animation: float-cloud 55s linear infinite 10s;" width="180" height="100" viewBox="0 0 24 24" fill="#ffffff" stroke="#1a1a1a" stroke-width="1"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
-
-    <div class="absolute top-4 left-4 z-[1000] w-[180px] md:w-[220px]">
-        <div class="bg-[#ffde59] comic-panel p-2 flex flex-col items-center gap-2 relative">
-            <div class="bg-white p-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] w-full flex items-center justify-center overflow-hidden">
-                <img src="IMG_2024.png" alt="Logo" class="w-full h-auto object-contain">
-            </div>
-            <p class="text-[10px] md:text-xs text-gray-800 font-bold bg-white inline-block px-2 py-1 rounded border-2 border-black shadow-[2px_2px_0px_#000] text-center w-full uppercase">¡Toca los destinos!</p>
-        </div>
+<body>
+<div id="map" aria-label="Mapa turístico interactivo de Villa Carlos Paz"></div>
+<header class="topbar">
+  <div class="brand-mark" aria-hidden="true">🧭</div>
+  <div><div class="brand-title">¡DESCUBRÍ CARLOS PAZ!</div><div class="brand-sub">GUÍA TURÍSTICA · EXPLORÁ A TU MANERA</div></div>
+</header>
+<aside class="panel" id="sidePanel">
+  <div class="panel-grab" id="panelGrab">☰ Explorar destinos　⌃</div>
+  <div class="panel-head">
+    <label class="searchbox"><span aria-hidden="true">🔎</span><input id="searchInput" type="search" placeholder="Buscar lugares, comida, paseos..." aria-label="Buscar destinos"><button id="clearSearch" aria-label="Limpiar búsqueda" title="Limpiar">×</button></label>
+    <div class="filters" id="filters">
+      <button class="chip active" data-category="todos">⭐ Todos</button>
+      <button class="chip" data-category="gastronomia">🍴 Gastronomía</button>
+      <button class="chip" data-category="naturaleza">🌳 Naturaleza</button>
+      <button class="chip" data-category="paseos">📸 Paseos</button>
+      <button class="chip" data-category="entretenimiento">🎭 Entretenimiento</button>
+      <button class="chip" data-category="alojamiento">🛏️ Alojamiento</button>
+      <button class="chip" data-category="compras">🛍️ Compras</button>
+      <button class="chip" data-category="servicios">🚗 Servicios</button>
     </div>
-
-    <div id="map"></div>
-
-    <script>
-        const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-31.4050, -64.4984], 13);
-        L.control.zoom({ position: 'bottomright' }).addTo(map);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
-
-        const URL_GOOGLE_SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQjYdNPEP6L2-IdI1bMWUNZj2o2NEMfS_-AreqhOa9rp8BczLTJCRdLzwjeZ-QM7YrAEkRtOXUZjbr/pub?output=csv";
-
-        function renderizar(datos) {
-            const markers = [];
-            datos.forEach((prop) => {
-                const lat = parseFloat(String(prop.latitud || '').replace(',', '.'));
-                const lng = parseFloat(String(prop.longitud || '').replace(',', '.'));
-                if (isNaN(lat) || isNaN(lng)) return;
-
-                const marker = L.marker([lat, lng], { 
-                    icon: L.divIcon({ className: 'custom-comic-marker', html: `<div class="relative animate-bounce-custom"><div class="${prop.color || 'bg-yellow-400'} text-3xl w-14 h-14 rounded-full flex items-center justify-center border-[3px] border-black shadow-[4px_4px_0px_rgba(0,0,0,1)]">${prop.emoji || '🏠'}</div></div>`, iconSize: [56, 56], iconAnchor: [28, 56] }) 
-                }).addTo(map);
-
-                marker.bindPopup(`<div class="bg-white rounded-[1.5rem] overflow-hidden"><div class="h-44 border-b-4 border-black"><img src="${prop.imagen}" class="w-full h-full object-cover"></div><div class="p-6 bg-[#fffdf0]"><h2 class="text-2xl font-bold uppercase mb-2">${prop.nombre}</h2><p class="text-gray-800 mb-4">${prop.descripcion}</p><a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" class="comic-button block w-full text-center bg-green-400 py-3 rounded-xl font-bold uppercase">¡Llevame Ahí! 🚀</a></div></div>`, { maxWidth: 320 });
-                markers.push(marker);
-            });
-            if (markers.length > 0) map.fitBounds(L.featureGroup(markers).getBounds(), { padding: [50, 50] });
-        }
-
-        Papa.parse(URL_GOOGLE_SHEET_CSV, { download: true, header: true, complete: (res) => renderizar(res.data) });
-    </script>
+  </div>
+  <div class="panel-scroll">
+    <section>
+      <h2 class="section-title">🗺️ Rutas recomendadas <span class="small-btn" id="clearRoute">Quitar ruta</span></h2>
+      <div class="route-list">
+        <button class="route-btn" data-route="clasicos"><span class="route-emoji">🌞</span><span><strong>Imperdibles de Carlos Paz</strong><small>Los clásicos para una primera visita</small></span>›</button>
+        <button class="route-btn" data-route="naturaleza"><span class="route-emoji">🌿</span><span><strong>Naturaleza y aventura</strong><small>Miradores, cerros y aire libre</small></span>›</button>
+        <button class="route-btn" data-route="sabores"><span class="route-emoji">🍕</span><span><strong>Sabores locales</strong><small>Paradas para comer y disfrutar</small></span>›</button>
+      </div>
+    </section>
+    <section style="margin-top:16px">
+      <h2 class="section-title"><span id="resultsTitle">📍 Destinos</span><button class="small-btn" id="showAll">Ver todos</button></h2>
+      <div id="destinationList" class="dest-list"><div class="loading">Cargando lugares…</div></div>
+    </section>
+    <section class="sharebox">
+      <strong>📣 ¡Compartí esta guía!</strong>
+      <div style="font-size:13px;line-height:1.25">Mandásela a quien esté por visitar Villa Carlos Paz.</div>
+      <div class="share-actions"><button class="action blue" id="shareBtn">↗ Compartir</button><button class="action" id="qrBtn">▦ Ver QR</button></div>
+      <div class="share-actions"><button class="action" id="copyBtn" style="width:100%">🔗 Copiar enlace</button><button class="action" id="installBtn" hidden>＋ Instalar</button></div>
+    </section>
+    <p style="font-size:11px;color:#555;margin:12px 2px">¿Tenés un comercio turístico? Sumalo a la guía y ayudá a que más visitantes te encuentren.</p>
+  </div>
+</aside>
+<button class="mobile-toggle" id="togglePanel">☰ Explorar lugares</button>
+<div class="map-controls">
+  <button class="map-control" id="zoomIn" aria-label="Acercar">＋</button><button class="map-control" id="zoomOut" aria-label="Alejar">−</button>
+  <button class="map-control loc" id="locateBtn" aria-label="Mostrar mi ubicación" title="Mostrar mi ubicación">◎</button>
+  <button class="map-control loc" id="mapHome" aria-label="Ver todos los destinos" title="Ver todos los destinos">⌖</button>
+</div>
+<div class="modal-backdrop" id="qrModal" role="dialog" aria-modal="true" aria-labelledby="qrTitle">
+ <div class="modal"><button class="modal-close" id="closeQr">Cerrar ×</button><h2 id="qrTitle">📲 Compartí la guía</h2><p>Escaneá este código QR para abrir la guía en el celular.</p><div class="qr-holder" id="qrHolder"><span>Preparando QR…</span></div><p id="qrUrl" style="font-size:12px;overflow-wrap:anywhere"></p><button class="action primary" id="downloadQr">⬇ Guardar QR</button></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(() => {
+'use strict';
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQjYdNPEP6L2-IdI1bMWUNZj2o2NEMfS_-AreqhOa9rp8BczLTdLzwjeZ-QM7YrAEkRtOXUZjbr/pub?output=csv";
+const DEFAULT_CENTER = [-31.4050, -64.4984];
+const map = L.map('map', {zoomControl:false}).setView(DEFAULT_CENTER,13);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(map);
+const $ = id => document.getElementById(id);
+const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const norm = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+const first = (obj, keys) => { for (const key of keys) if (obj[key] != null && String(obj[key]).trim() !== '') return obj[key]; return ''; };
+const categoryMeta = {
+  gastronomia:{label:'Gastronomía',emoji:'🍴',color:'#ffad62',keys:['gastronomia','restaurante','bar','comida','cafe','cafeteria','heladeria','parrilla','pizzeria']},
+  naturaleza:{label:'Naturaleza',emoji:'🌳',color:'#61d98b',keys:['naturaleza','cerro','senderismo','mirador','parque','rio','lago','playa','aventura']},
+  paseos:{label:'Paseos',emoji:'📸',color:'#6fc8ff',keys:['paseo','turismo','atraccion','monumento','costanera','reloj','museo','mirador','cultural']},
+  entretenimiento:{label:'Entretenimiento',emoji:'🎭',color:'#ff75c8',keys:['entretenimiento','teatro','show','espectaculo','juego','casino','cine']},
+  alojamiento:{label:'Alojamiento',emoji:'🛏️',color:'#c8a3ff',keys:['alojamiento','hotel','hosteria','cabanas','departamento','hospedaje']},
+  compras:{label:'Compras',emoji:'🛍️',color:'#ff7b7b',keys:['compras','tienda','local','shopping','artesania','regalo']},
+  servicios:{label:'Servicios',emoji:'🚗',color:'#5ce2cc',keys:['servicio','estacionamiento','nafta','salud','informacion','transporte','taxi','banco']},
+  otros:{label:'Otros',emoji:'📍',color:'#ffde59',keys:[]}
+};
+let allDestinations=[], visibleDestinations=[], markers=[], activeCategory='todos', activeRoute=null, routeLine=null, userMarker=null, deferredInstallPrompt=null;
+const markerLayer=L.featureGroup().addTo(map);
+function getCategory(raw) {
+  const explicit=norm(first(raw,['categoria','categoría','category','tipo','rubro']));
+  if(explicit){
+    for(const [key,meta] of Object.entries(categoryMeta)) if(key==='otros' ? explicit==='otros' : explicit.includes(key)||meta.keys.some(k=>explicit.includes(k))) return key;
+  }
+  const text=norm([raw.nombre,raw.descripcion,raw.rubro,raw.tipo].join(' '));
+  for(const [key,meta] of Object.entries(categoryMeta)) if(key!=='otros'&&meta.keys.some(k=>text.includes(k))) return key;
+  return 'otros';
+}
+function normalizeRow(raw,index){
+  const lat=parseFloat(String(first(raw,['latitud','latitude','lat'])).replace(',','.'));
+  const lng=parseFloat(String(first(raw,['longitud','longitude','lng','lon'])).replace(',','.'));
+  if(!Number.isFinite(lat)||!Number.isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180)return null;
+  const category=getCategory(raw);
+  return {id:index,nombre:String(first(raw,['nombre','name','destino'])||`Destino ${index+1}`),descripcion:String(first(raw,['descripcion','descripción','description','detalle'])||'Descubrí este lugar de Villa Carlos Paz.'),imagen:String(first(raw,['imagen','foto','image','url_imagen','url imagen'])||''),latitud:lat,longitud:lng,categoria:category,direccion:String(first(raw,['direccion','dirección','address'])||''),horarios:String(first(raw,['horarios','horario','hours'])||''),contacto:String(first(raw,['telefono','teléfono','contacto','telefono_contacto'])||''),web:String(first(raw,['web','sitio_web','sitio web','url','instagram'])||''),emoji:String(first(raw,['emoji','icono','ícono'])||categoryMeta[category].emoji),color:String(first(raw,['color'])||'')};
+}
+function safeImage(url){
+  const val=String(url||'').trim();
+  if(!val)return '';
+  try{const parsed=new URL(val,location.href);return ['http:','https:'].includes(parsed.protocol)?parsed.href:'';}catch{return '';}
+}
+function markerIcon(d){
+  const meta=categoryMeta[d.categoria]||categoryMeta.otros;
+  return L.divIcon({className:'marker-wrap',html:`<div class="marker-bubble" style="background:${esc(meta.color)}"><span>${esc(d.emoji||meta.emoji)}</span></div>`,iconSize:[43,43],iconAnchor:[21,40],popupAnchor:[0,-37]});
+}
+function popupHTML(d){
+  const meta=categoryMeta[d.categoria]||categoryMeta.otros, image=safeImage(d.imagen);
+  const directions=`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(d.latitud+','+d.longitud)}`;
+  return `<div>${image?`<img class="popup-img" src="${esc(image)}" alt="${esc(d.nombre)}" loading="lazy" onerror="this.style.display='none'">`:''}<div class="popup-body"><span class="popup-category">${esc(meta.emoji+' '+meta.label)}</span><h3>${esc(d.nombre)}</h3><p>${esc(d.descripcion)}</p>${d.direccion?`<p>📍 ${esc(d.direccion)}</p>`:''}${d.horarios?`<p>🕒 ${esc(d.horarios)}</p>`:''}${d.contacto?`<p>☎️ ${esc(d.contacto)}</p>`:''}<div class="popup-actions"><a href="${directions}" target="_blank" rel="noopener noreferrer">🧭 Cómo llegar</a><button type="button" data-favorite="${d.id}">♡ Favorito</button></div>${d.web?`<p style="margin-top:9px"><a href="${esc(safeImage(d.web)||'#')}" target="_blank" rel="noopener noreferrer">Más información ↗</a></p>`:''}</div></div>`;
+}
+function addMarker(d){
+ const marker=L.marker([d.latitud,d.longitud],{icon:markerIcon(d),title:d.nombre,alt:d.nombre});
+ marker.bindPopup(()=>popupHTML(d),{maxWidth:310,closeButton:true});
+ marker.on('popupopen',e=>{const btn=e.popup.getElement()?.querySelector(`[data-favorite="${d.id}"]`);if(btn)btn.addEventListener('click',()=>toggleFavorite(d.id));});
+ d.marker=marker; markerLayer.addLayer(marker); markers.push(marker);
+}
+function getFavorites(){try{return JSON.parse(localStorage.getItem('vc_paz_favorites')||'[]')}catch{return []}}
+function toggleFavorite(id){const fav=getFavorites();const next=fav.includes(id)?fav.filter(x=>x!==id):[...fav,id];localStorage.setItem('vc_paz_favorites',JSON.stringify(next));toast(next.includes(id)?'Guardado en favoritos ⭐':'Quitado de favoritos');renderList();}
+function destinationCard(d){
+ const meta=categoryMeta[d.categoria]||categoryMeta.otros, img=safeImage(d.imagen), fav=getFavorites().includes(d.id);
+ return `<button class="dest-row" data-destination="${d.id}">${img?`<img src="${esc(img)}" alt="" loading="lazy" onerror="this.style.display='none'">`:`<img alt="" src="data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="80"><rect width="100%" height="100%" fill="${meta.color}"/><text x="50%" y="58%" text-anchor="middle" font-size="30">${meta.emoji}</text></svg>`)}">`}<span><strong>${fav?'⭐ ':''}${esc(d.nombre)}</strong><small>${esc(meta.emoji+' '+meta.label)}${d.direccion?' · '+esc(d.direccion):''}</small></span></button>`;
+}
+function renderList(){
+ const q=norm($('searchInput').value), fav=getFavorites();
+ visibleDestinations=allDestinations.filter(d=>(activeCategory==='todos'||d.categoria===activeCategory)&&(!q||norm([d.nombre,d.descripcion,d.direccion,d.categoria].join(' ')).includes(q)));
+ if(activeRoute==='favoritos')visibleDestinations=visibleDestinations.filter(d=>fav.includes(d.id));
+ $('resultsTitle').textContent=`📍 Destinos (${visibleDestinations.length})`;
+ $('destinationList').innerHTML=visibleDestinations.length?visibleDestinations.map(destinationCard).join(''):`<div class="empty">😅 No encontramos lugares con esos filtros.<br>Probá otra búsqueda.</div>`;
+ document.querySelectorAll('.chip').forEach(b=>b.classList.toggle('active',b.dataset.category===activeCategory));
+ markerLayer.clearLayers();markers=[];
+ visibleDestinations.forEach(d=>{addMarker(d)});
+}
+function fitVisible(){
+ if(visibleDestinations.length){const bounds=L.latLngBounds(visibleDestinations.map(d=>[d.latitud,d.longitud]));map.fitBounds(bounds,{padding:[45,45],maxZoom:15});}
+ else map.setView(DEFAULT_CENTER,13);
+}
+function selectDestination(id){
+ const d=allDestinations.find(x=>x.id===Number(id));if(!d)return;
+ if(!visibleDestinations.some(x=>x.id===d.id)){activeCategory='todos';activeRoute=null;$('searchInput').value='';renderList();}
+ map.flyTo([d.latitud,d.longitud],Math.max(map.getZoom(),15),{duration:.65});
+ setTimeout(()=>d.marker?.openPopup(),450);
+ if(window.innerWidth<=760)$('sidePanel').classList.add('collapsed');
+}
+function chooseRoute(route){
+ activeRoute=route;activeCategory='todos';$('searchInput').value='';
+ const keywords={clasicos:['reloj','cu-cu','cucu','costanera','cerro de la cruz','puente','centro','aerosilla'],naturaleza:['naturaleza','cerro','mirador','lago','parque','sendero','aerosilla'],sabores:['gastronomia','restaurante','bar','comida','cafe','heladeria','parrilla']};
+ const words=keywords[route]||[];
+ let chosen=allDestinations.filter(d=>{const text=norm(d.nombre+' '+d.descripcion+' '+d.categoria);return words.some(w=>text.includes(w))});
+ if(!chosen.length&&route==='sabores')chosen=allDestinations.filter(d=>d.categoria==='gastronomia');
+ if(!chosen.length&&route==='naturaleza')chosen=allDestinations.filter(d=>d.categoria==='naturaleza');
+ if(!chosen.length)chosen=allDestinations.slice(0,Math.min(8,allDestinations.length));
+ visibleDestinations=chosen;
+ $('resultsTitle').textContent=`🗺️ Ruta · ${({clasicos:'Imperdibles',naturaleza:'Naturaleza y aventura',sabores:'Sabores locales'})[route]}`;
+ $('destinationList').innerHTML=chosen.length?chosen.map(destinationCard).join(''):`<div class="empty">Todavía no hay destinos cargados para esta ruta.</div>`;
+ markerLayer.clearLayers();markers=[];chosen.forEach(addMarker);
+ if(routeLine){map.removeLayer(routeLine);routeLine=null;}
+ if(chosen.length>1){routeLine=L.polyline(chosen.map(d=>[d.latitud,d.longitud]),{color:'#168bff',weight:5,opacity:.8,dashArray:'9 8'}).addTo(map);map.fitBounds(routeLine.getBounds(),{padding:[55,55],maxZoom:15});}
+ else if(chosen.length)map.setView([chosen[0].latitud,chosen[0].longitud],14);
+ toast(`Ruta preparada con ${chosen.length} lugares. El recorrido es orientativo.`);
+ if(window.innerWidth<=760)$('sidePanel').classList.remove('collapsed');
+}
+function clearRoute(){activeRoute=null;if(routeLine){map.removeLayer(routeLine);routeLine=null;}renderList();fitVisible();}
+function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),2600);}
+async function loadData(){
+ try{
+  if(!window.Papa)throw new Error('No se pudo cargar el lector de planillas.');
+  Papa.parse(SHEET_CSV_URL,{download:true,header:true,skipEmptyLines:true,transformHeader:h=>h.trim().toLowerCase(),complete:res=>{
+    if(res.errors?.some(e=>e.type==='Abort')){showLoadError('No se pudo descargar la planilla.');return;}
+    allDestinations=res.data.map(normalizeRow).filter(Boolean);
+    if(!allDestinations.length){showLoadError('La planilla se descargó, pero no se encontraron destinos con latitud y longitud válidas. Revisá los encabezados latitud y longitud.');return;}
+    renderList();fitVisible();
+  },error:()=>showLoadError('No pudimos conectar con Google Sheets. Revisá la conexión o la publicación CSV de la planilla.')});
+ }catch(e){showLoadError(e.message||'No se pudieron cargar los destinos.');}
+}
+function showLoadError(message){$('destinationList').innerHTML=`<div class="empty error">⚠️ ${esc(message)}<br><button class="action" id="retryLoad" style="margin-top:10px">Reintentar</button></div>`;$('retryLoad')?.addEventListener('click',loadData);}
+document.querySelectorAll('[data-category]').forEach(btn=>btn.addEventListener('click',()=>{activeCategory=btn.dataset.category;activeRoute=null;if(routeLine){map.removeLayer(routeLine);routeLine=null;}renderList();fitVisible();}));
+$('searchInput').addEventListener('input',()=>{activeRoute=null;if(routeLine){map.removeLayer(routeLine);routeLine=null;}renderList();});
+$('clearSearch').addEventListener('click',()=>{$('searchInput').value='';activeCategory='todos';activeRoute=null;renderList();fitVisible();});
+$('destinationList').addEventListener('click',e=>{const row=e.target.closest('[data-destination]');if(row)selectDestination(row.dataset.destination);});
+document.querySelectorAll('[data-route]').forEach(b=>b.addEventListener('click',()=>chooseRoute(b.dataset.route)));
+$('clearRoute').addEventListener('click',clearRoute);
+$('showAll').addEventListener('click',()=>{activeCategory='todos';activeRoute=null;$('searchInput').value='';if(routeLine){map.removeLayer(routeLine);routeLine=null;}renderList();fitVisible();});
+$('zoomIn').addEventListener('click',()=>map.zoomIn());$('zoomOut').addEventListener('click',()=>map.zoomOut());$('mapHome').addEventListener('click',()=>{clearRoute();$('sidePanel').classList.remove('collapsed');});
+$('locateBtn').addEventListener('click',()=>{if(!navigator.geolocation){toast('Tu navegador no permite consultar la ubicación.');return;}toast('Buscando tu ubicación…');navigator.geolocation.getCurrentPosition(pos=>{const p=[pos.coords.latitude,pos.coords.longitude];if(userMarker)map.removeLayer(userMarker);userMarker=L.circleMarker(p,{radius:9,color:'#111',weight:3,fillColor:'#168bff',fillOpacity:1}).addTo(map).bindPopup('📍 Estás acá');map.flyTo(p,15);userMarker.openPopup();},()=>toast('No pudimos acceder a tu ubicación. Revisá los permisos del navegador.'),{enableHighAccuracy:true,timeout:9000});});
+$('togglePanel').addEventListener('click',()=>{$('sidePanel').classList.toggle('collapsed');$('togglePanel').textContent=$('sidePanel').classList.contains('collapsed')?'☰ Explorar lugares':'⌄ Ocultar panel';setTimeout(()=>map.invalidateSize(),250);});
+$('panelGrab').addEventListener('click',()=>{$('sidePanel').classList.toggle('collapsed');setTimeout(()=>map.invalidateSize(),250);});
+$('copyBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);toast('¡Enlace copiado!');}catch{prompt('Copiá el enlace de la guía:',location.href);}});
+$('shareBtn').addEventListener('click',async()=>{const shareData={title:'¡Descubrí Villa Carlos Paz!',text:'Lugares, paseos y rutas para disfrutar Villa Carlos Paz.',url:location.href};if(navigator.share){try{await navigator.share(shareData)}catch(e){if(e.name!=='AbortError')toast('No se pudo compartir desde este dispositivo.')}}else{try{await navigator.clipboard.writeText(location.href);toast('Enlace copiado. ¡Ya podés compartirlo!')}catch{prompt('Compartí este enlace:',location.href)}}});
+$('qrBtn').addEventListener('click',()=>{const holder=$('qrHolder');holder.innerHTML='';$('qrUrl').textContent=location.href;if(!window.QRCode){holder.textContent='No se pudo cargar el generador QR. Comprobá tu conexión.';}$('qrModal').classList.add('open');if(window.QRCode)new QRCode(holder,{text:location.href,width:200,height:200,colorDark:'#171717',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});});
+$('closeQr').addEventListener('click',()=>$('qrModal').classList.remove('open'));$('qrModal').addEventListener('click',e=>{if(e.target===$('qrModal'))$('qrModal').classList.remove('open');});
+$('downloadQr').addEventListener('click',()=>{const holder=$('qrHolder'),canvas=holder.querySelector('canvas'),img=holder.querySelector('img');const src=canvas?canvas.toDataURL('image/png'):img?.src;if(!src){toast('Primero generá el QR.');return;}const a=document.createElement('a');a.href=src;a.download='qr-guia-villa-carlos-paz.png';a.click();});
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;$('installBtn').hidden=false;});
+$('installBtn').addEventListener('click',async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;$('installBtn').hidden=true;});
+if('serviceWorker'in navigator && /^https?:$/.test(location.protocol)){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+loadData();
+})();
+</script>
 </body>
 </html>
