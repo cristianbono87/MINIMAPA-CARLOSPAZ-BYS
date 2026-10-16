@@ -31,7 +31,7 @@
 <div id="map" aria-label="Mapa turístico interactivo de Villa Carlos Paz"></div>
 <header class="topbar">
   <div class="brand-mark" aria-hidden="true">🧭</div>
-  <div><div class="brand-title">¡DESCUBRÍ CARLOS PAZ!</div><div class="brand-sub">GUÍA TURÍSTICA · EXPLORÁ A TU MANERA</div></div>
+  <div style="min-width:0"><div class="brand-title">¡DESCUBRÍ CARLOS PAZ!</div><div class="brand-sub">GUÍA TURÍSTICA · EXPLORÁ A TU MANERA</div></div><button id="adminOpen" class="small-btn" style="margin-left:4px;white-space:nowrap">⚙ Admin</button>
 </header>
 <aside class="panel" id="sidePanel">
   <div class="panel-grab" id="panelGrab">☰ Explorar destinos　⌃</div>
@@ -76,7 +76,26 @@
   <button class="map-control loc" id="locateBtn" aria-label="Mostrar mi ubicación" title="Mostrar mi ubicación">◎</button>
   <button class="map-control loc" id="mapHome" aria-label="Ver todos los destinos" title="Ver todos los destinos">⌖</button>
 </div>
-<div class="modal-backdrop" id="qrModal" role="dialog" aria-modal="true" aria-labelledby="qrTitle">
+<div class="modal-backdrop" id="adminModal" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+<div class="modal" style="text-align:left;width:min(560px,100%)"><button class="modal-close" id="adminClose">Cerrar ×</button><h2 id="adminTitle">🏡 Administrar propiedades</h2>
+<p style="font-size:13px">Cargá departamentos y alojamientos de la agencia.</p>
+<div id="adminLogin"><label style="display:block;font-weight:800;margin:10px 0 4px">PIN de administrador</label><input id="adminPin" type="password" inputmode="numeric" placeholder="Ingresá el PIN" style="width:100%;padding:10px;border:2px solid #171717;border-radius:10px"><button id="adminLoginBtn" class="action primary" style="margin-top:10px;width:100%">Ingresar</button><p style="font-size:11px;color:#666">PIN inicial de demostración: 2468. Cambialo antes de publicar; no es autenticación segura.</p></div>
+<div id="adminWorkspace" hidden>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px">
+<label style="font-weight:700">Nombre<input id="propName" placeholder="Departamento céntrico" style="display:block;width:100%;padding:9px;border:2px solid #171717;border-radius:9px"></label>
+<label style="font-weight:700">Tipo<select id="propType" style="display:block;width:100%;padding:9px;border:2px solid #171717;border-radius:9px"><option>Departamento</option><option>Casa</option><option>Cabaña</option><option>Habitación</option><option>Complejo</option></select></label>
+<label style="font-weight:700">Latitud<input id="propLat" type="number" step="any" placeholder="-31.42" style="display:block;width:100%;padding:9px;border:2px solid #171717;border-radius:9px"></label>
+<label style="font-weight:700">Longitud<input id="propLng" type="number" step="any" placeholder="-64.50" style="display:block;width:100%;padding:9px;border:2px solid #171717;border-radius:9px"></label>
+<label style="font-weight:700;grid-column:1/-1">Dirección<input id="propAddress" placeholder="Calle y número" style="display:block;width:100%;padding:9px;border:2px solid #171717;border-radius:9px"></label>
+<label style="font-weight:700;grid-column:1/-1">Descripción<input id="propDescription" placeholder="Ambientes, servicios, amenities..." style="display:block;width:100%;padding:9px;border:2px solid #171717;border-radius:9px"></label>
+<label style="font-weight:700;grid-column:1/-1">Foto URL<input id="propImage" type="url" placeholder="https://..." style="display:block;width:100%;padding:9px;border:2px solid #171717;border-radius:9px"></label>
+<label style="font-weight:700">Capacidad<input id="propCapacity" placeholder="4 personas" style="display:block;width:100%;padding:9px;border:2px solid #171717;border-radius:9px"></label>
+<label style="font-weight:700">Precio orientativo<input id="propPrice" placeholder="Consultar" style="display:block;width:100%;padding:9px;border:2px solid #171717;border-radius:9px"></label>
+<label style="font-weight:700;grid-column:1/-1">WhatsApp / contacto<input id="propContact" placeholder="549..." style="display:block;width:100%;padding:9px;border:2px solid #171717;border-radius:9px"></label></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button id="saveProperty" class="action primary">＋ Guardar propiedad</button><button id="exportProperties" class="action">⬇ Exportar JSON</button><button id="importPropertiesBtn" class="action">⬆ Importar JSON</button><input id="importPropertiesFile" type="file" accept="application/json,.json" hidden></div>
+<p style="font-size:11px;color:#8a4b00;background:#fff0bd;padding:9px;border-radius:9px">Esta versión guarda las propiedades en este navegador. Para que se publiquen para todos los turistas hay que conectarla a una fuente compartida como Google Sheets mediante Google Apps Script.</p>
+<h3 style="margin:16px 0 6px">Propiedades cargadas</h3><div id="adminPropertyList" style="display:grid;gap:7px"></div></div></div></div>
+\n<div class="modal-backdrop" id="qrModal" role="dialog" aria-modal="true" aria-labelledby="qrTitle">
  <div class="modal"><button class="modal-close" id="closeQr">Cerrar ×</button><h2 id="qrTitle">📲 Compartí la guía</h2><p>Escaneá este código QR para abrir la guía en el celular.</p><div class="qr-holder" id="qrHolder"><span>Preparando QR…</span></div><p id="qrUrl" style="font-size:12px;overflow-wrap:anywhere"></p><button class="action primary" id="downloadQr">⬇ Guardar QR</button></div>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -104,6 +123,19 @@ const categoryMeta = {
   servicios:{label:'Servicios',emoji:'🚗',color:'#5ce2cc',keys:['servicio','estacionamiento','nafta','salud','informacion','transporte','taxi','banco']},
   otros:{label:'Otros',emoji:'📍',color:'#ffde59',keys:[]}
 };
+const BUILTIN_PLACES = [
+{nombre:'Reloj Cu-Cú',descripcion:'Uno de los emblemas turísticos de la ciudad.',latitud:-31.4109,longitud:-64.5142,categoria:'paseos',direccion:'Bv. Sarmiento y Av. Uruguay',emoji:'🕰️'},
+{nombre:'Acceso al Cerro de la Cruz',descripcion:'Inicio del sendero hacia la cruz y las vistas panorámicas.',latitud:-31.4308,longitud:-64.5107,categoria:'naturaleza',direccion:'Complejo Aerosilla, Florencio Sánchez S/N',emoji:'⛰️'},
+{nombre:'Complejo Aerosilla',descripcion:'Paseo panorámico y actividades de aventura. Consultá horarios.',latitud:-31.4312,longitud:-64.5116,categoria:'entretenimiento',direccion:'Florencio Sánchez S/N',emoji:'🚡'},
+{nombre:'Paseo Costanera',descripcion:'Recorrido junto al lago para caminar y disfrutar del paisaje.',latitud:-31.4140,longitud:-64.5032,categoria:'paseos',direccion:'Costanera del Lago San Roque',emoji:'🌊'},
+{nombre:'Puente Uruguay',descripcion:'Puente y galería turística con vistas al río.',latitud:-31.4140,longitud:-64.5135,categoria:'paseos',direccion:'Puente Uruguay',emoji:'🌉'},
+{nombre:'Parque Estancia La Quinta',descripcion:'Espacio natural e histórico para conocer el patrimonio local.',latitud:-31.4110,longitud:-64.5310,categoria:'naturaleza',direccion:'Barrio Los Carolinos',emoji:'🌳'},
+{nombre:'Iglesia Nuestra Señora del Carmen',descripcion:'Iglesia tradicional ubicada en el centro.',latitud:-31.4231,longitud:-64.4985,categoria:'paseos',direccion:'Av. General Paz, centro',emoji:'⛪'},
+{nombre:'Centro comercial',descripcion:'Zona céntrica con comercios, feria y propuestas gastronómicas.',latitud:-31.4218,longitud:-64.4974,categoria:'compras',direccion:'Centro de Villa Carlos Paz',emoji:'🛍️'},
+{nombre:'Balneario El Fantasio',descripcion:'Balneario del río San Antonio; verificá condiciones y servicios.',latitud:-31.4300,longitud:-64.5290,categoria:'naturaleza',direccion:'Villa Carlos Paz',emoji:'🏖️'},
+{nombre:'Fuente del Centenario',descripcion:'Mural de mosaicos que relata parte de la historia local.',latitud:-31.4210,longitud:-64.4965,categoria:'paseos',direccion:'Zona Terminal de Ómnibus',emoji:'⛲'}
+].map((d,i)=>({...d,id:'builtin-'+i,imagen:''}));
+function getAgencyProperties(){try{return JSON.parse(localStorage.getItem('vc_paz_agency_properties')||'[]').filter(x=>x&&x.id)}catch{return []}}
 let allDestinations=[], visibleDestinations=[], markers=[], activeCategory='todos', activeRoute=null, routeLine=null, userMarker=null, deferredInstallPrompt=null;
 const markerLayer=L.featureGroup().addTo(map);
 function getCategory(raw) {
@@ -120,7 +152,7 @@ function normalizeRow(raw,index){
   const lng=parseFloat(String(first(raw,['longitud','longitude','lng','lon'])).replace(',','.'));
   if(!Number.isFinite(lat)||!Number.isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180)return null;
   const category=getCategory(raw);
-  return {id:index,nombre:String(first(raw,['nombre','name','destino'])||`Destino ${index+1}`),descripcion:String(first(raw,['descripcion','descripción','description','detalle'])||'Descubrí este lugar de Villa Carlos Paz.'),imagen:String(first(raw,['imagen','foto','image','url_imagen','url imagen'])||''),latitud:lat,longitud:lng,categoria:category,direccion:String(first(raw,['direccion','dirección','address'])||''),horarios:String(first(raw,['horarios','horario','hours'])||''),contacto:String(first(raw,['telefono','teléfono','contacto','telefono_contacto'])||''),web:String(first(raw,['web','sitio_web','sitio web','url','instagram'])||''),emoji:String(first(raw,['emoji','icono','ícono'])||categoryMeta[category].emoji),color:String(first(raw,['color'])||'')};
+  return {id:first(raw,['id'])||index,nombre:String(first(raw,['nombre','name','destino'])||`Destino ${index+1}`),descripcion:String(first(raw,['descripcion','descripción','description','detalle'])||'Descubrí este lugar de Villa Carlos Paz.'),imagen:String(first(raw,['imagen','foto','image','url_imagen','url imagen'])||''),latitud:lat,longitud:lng,categoria:category,direccion:String(first(raw,['direccion','dirección','address'])||''),horarios:String(first(raw,['horarios','horario','hours'])||''),contacto:String(first(raw,['telefono','teléfono','contacto','telefono_contacto'])||''),web:String(first(raw,['web','sitio_web','sitio web','url','instagram'])||''),emoji:String(first(raw,['emoji','icono','ícono'])||categoryMeta[category].emoji),color:String(first(raw,['color'])||'')};
 }
 function safeImage(url){
   const val=String(url||'').trim();
@@ -163,7 +195,7 @@ function fitVisible(){
  else map.setView(DEFAULT_CENTER,13);
 }
 function selectDestination(id){
- const d=allDestinations.find(x=>x.id===Number(id));if(!d)return;
+ const d=allDestinations.find(x=>String(x.id)===String(id));if(!d)return;
  if(!visibleDestinations.some(x=>x.id===d.id)){activeCategory='todos';activeRoute=null;$('searchInput').value='';renderList();}
  map.flyTo([d.latitud,d.longitud],Math.max(map.getZoom(),15),{duration:.65});
  setTimeout(()=>d.marker?.openPopup(),450);
@@ -194,13 +226,13 @@ async function loadData(){
   if(!window.Papa)throw new Error('No se pudo cargar el lector de planillas.');
   Papa.parse(SHEET_CSV_URL,{download:true,header:true,skipEmptyLines:true,transformHeader:h=>h.trim().toLowerCase(),complete:res=>{
     if(res.errors?.some(e=>e.type==='Abort')){showLoadError('No se pudo descargar la planilla.');return;}
-    allDestinations=res.data.map(normalizeRow).filter(Boolean);
-    if(!allDestinations.length){showLoadError('La planilla se descargó, pero no se encontraron destinos con latitud y longitud válidas. Revisá los encabezados latitud y longitud.');return;}
+    const sheetPlaces=res.data.map(normalizeRow).filter(Boolean);
+    allDestinations=[...BUILTIN_PLACES,...sheetPlaces,...getAgencyProperties().map(p=>({...p,categoria:'alojamiento',emoji:'🏡'}))];
     renderList();fitVisible();
   },error:()=>showLoadError('No pudimos conectar con Google Sheets. Revisá la conexión o la publicación CSV de la planilla.')});
  }catch(e){showLoadError(e.message||'No se pudieron cargar los destinos.');}
 }
-function showLoadError(message){$('destinationList').innerHTML=`<div class="empty error">⚠️ ${esc(message)}<br><button class="action" id="retryLoad" style="margin-top:10px">Reintentar</button></div>`;$('retryLoad')?.addEventListener('click',loadData);}
+function showLoadError(message){allDestinations=[...BUILTIN_PLACES,...getAgencyProperties().map(p=>({...p,categoria:'alojamiento',emoji:'🏡'}))];renderList();fitVisible();const n=document.createElement('div');n.className='empty error';n.style.marginBottom='8px';n.innerHTML=`⚠️ ${esc(message)} <button class="action" id="retryLoad" style="margin-top:8px">Reintentar planilla</button>`;$('destinationList').prepend(n);$('retryLoad')?.addEventListener('click',loadData);}
 document.querySelectorAll('[data-category]').forEach(btn=>btn.addEventListener('click',()=>{activeCategory=btn.dataset.category;activeRoute=null;if(routeLine){map.removeLayer(routeLine);routeLine=null;}renderList();fitVisible();}));
 $('searchInput').addEventListener('input',()=>{activeRoute=null;if(routeLine){map.removeLayer(routeLine);routeLine=null;}renderList();});
 $('clearSearch').addEventListener('click',()=>{$('searchInput').value='';activeCategory='todos';activeRoute=null;renderList();fitVisible();});
@@ -220,6 +252,20 @@ $('downloadQr').addEventListener('click',()=>{const holder=$('qrHolder'),canvas=
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;$('installBtn').hidden=false;});
 $('installBtn').addEventListener('click',async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;$('installBtn').hidden=true;});
 if('serviceWorker'in navigator && /^https?:$/.test(location.protocol)){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+const ADMIN_PIN='2468';let adminUnlocked=false;
+function renderAdminProperties(){const props=getAgencyProperties();$('adminPropertyList').innerHTML=props.length?props.map(p=>`<div style="display:flex;justify-content:space-between;gap:8px;background:white;border:1px solid #ddd;border-radius:10px;padding:8px"><span><strong>${esc(p.nombre)}</strong><small style="display:block">${esc(p.direccion||'Sin dirección')} · ${esc(p.capacidad||'Capacidad a consultar')}</small></span><button class="small-btn" data-delete-property="${esc(p.id)}">Eliminar</button></div>`).join(''):'<div class="empty">Todavía no cargaste propiedades.</div>';}
+function resetPropertyForm(){['propName','propLat','propLng','propAddress','propDescription','propImage','propCapacity','propPrice','propContact'].forEach(id=>$(id).value='');$('propType').selectedIndex=0;}
+$('adminOpen').addEventListener('click',()=>{$('adminModal').classList.add('open');$('adminLogin').hidden=adminUnlocked;$('adminWorkspace').hidden=!adminUnlocked;if(adminUnlocked)renderAdminProperties();});
+$('adminClose').addEventListener('click',()=>$('adminModal').classList.remove('open'));$('adminModal').addEventListener('click',e=>{if(e.target===$('adminModal'))$('adminModal').classList.remove('open');});
+$('adminLoginBtn').addEventListener('click',()=>{if($('adminPin').value===ADMIN_PIN){adminUnlocked=true;$('adminLogin').hidden=true;$('adminWorkspace').hidden=false;renderAdminProperties();}else toast('PIN incorrecto.');});
+$('saveProperty').addEventListener('click',()=>{const nombre=$('propName').value.trim(),lat=parseFloat($('propLat').value),lng=parseFloat($('propLng').value);if(!nombre||!Number.isFinite(lat)||!Number.isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180){toast('Completá nombre y coordenadas válidas.');return;}
+const props=getAgencyProperties();props.push({id:'agency-'+Date.now(),nombre,latitud:lat,longitud:lng,categoria:'alojamiento',tipo:$('propType').value,descripcion:$('propDescription').value.trim()||'Consultá disponibilidad con la agencia.',direccion:$('propAddress').value.trim(),imagen:safeImage($('propImage').value),capacidad:$('propCapacity').value.trim(),precio:$('propPrice').value.trim(),contacto:$('propContact').value.trim(),emoji:'🏡'});
+localStorage.setItem('vc_paz_agency_properties',JSON.stringify(props));allDestinations=[...allDestinations.filter(d=>!String(d.id).startsWith('agency-')),...props.map(x=>({...x,categoria:'alojamiento'}))];resetPropertyForm();renderAdminProperties();renderList();toast('Propiedad guardada en este navegador.');});
+$('adminPropertyList').addEventListener('click',e=>{const b=e.target.closest('[data-delete-property]');if(!b)return;const id=b.dataset.deleteProperty;localStorage.setItem('vc_paz_agency_properties',JSON.stringify(getAgencyProperties().filter(p=>String(p.id)!==id)));allDestinations=allDestinations.filter(d=>String(d.id)!==id);renderAdminProperties();renderList();});
+$('exportProperties').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(getAgencyProperties(),null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='propiedades-agencia.json';a.click();URL.revokeObjectURL(url);});
+$('importPropertiesBtn').addEventListener('click',()=>$('importPropertiesFile').click());
+$('importPropertiesFile').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const arr=JSON.parse(await f.text());if(!Array.isArray(arr))throw Error('El JSON debe ser una lista.');const props=arr.filter(p=>p&&p.nombre&&Number.isFinite(Number(p.latitud))&&Number.isFinite(Number(p.longitud))).map((p,i)=>({...p,id:p.id||'agency-import-'+Date.now()+'-'+i,categoria:'alojamiento',latitud:Number(p.latitud),longitud:Number(p.longitud),emoji:'🏡'}));localStorage.setItem('vc_paz_agency_properties',JSON.stringify(props));allDestinations=[...allDestinations.filter(d=>!String(d.id).startsWith('agency-')),...props];renderAdminProperties();renderList();toast('Propiedades importadas: '+props.length);}catch(err){toast('Error al importar: '+err.message)}e.target.value='';});
+
 loadData();
 })();
 </script>
